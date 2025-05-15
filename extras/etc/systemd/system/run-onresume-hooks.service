@@ -1,0 +1,11 @@
+[Unit]
+Description=Run scripts from /usr/local/bin/resume on wake from suspend
+After=suspend.target
+Requires=suspend.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'if [ -d /usr/local/bin/resume ]; then for script in /usr/local/bin/resume/*; do if [ -x "$script" ]; then /bin/bash "$script"; fi; done; fi'
+
+[Install]
+WantedBy=suspend.target

@@ -1,0 +1,43 @@
+#!/bin/bash
+## Add hooks for all user-defined scripts located in /usr/local/bin/suspend and /usr/local/bin/resume directories upon system suspend and resume (wake-up from suspension) events
+
+# You will need to be root to run this script
+if [ "$EUID" -ne 0 ]; then
+    echo "This script must be run as root. Attempting to elevate..."
+    exec sudo "$0" "$@"
+fi
+
+SYSTEMD_FOLDER=/etc/systemd/system
+mkdir -p "$SYSTEMD_FOLDER"
+
+ONSUSPEND_SERVICE=run-onsuspend-hooks.service
+ONRESUME_SERVICE=run-onresume-hooks.service
+
+DEST="${SYSTEMD_FOLDER}/${ONSUSPEND_SERVICE}"
+URL="https://raw.githubusercontent.com/EnriqueWood/linux-gamer-patcher/refs/heads/main/extras$DEST"
+wget -q -O "$DEST" "$URL"
+
+DEST="${SYSTEMD_FOLDER}/${ONRESUME_SERVICE}"
+URL="https://raw.githubusercontent.com/EnriqueWood/linux-gamer-patcher/refs/heads/main/extras$DEST"
+wget -q -O "$DEST" "$URL"
+
+mkdir -p /usr/local/bin/{suspend,resume}
+
+DEST=/usr/local/bin/resume/99-turn-on-tv.sh
+URL="https://raw.githubusercontent.com/EnriqueWood/linux-gamer-patcher/refs/heads/main/extras$DEST"
+wget -q -O "$DEST" "$URL"
+chmod +x "${DEST}"
+
+DEST=/usr/local/bin/suspend/50-enable-wake-on-bluetooth.sh
+URL="https://raw.githubusercontent.com/EnriqueWood/linux-gamer-patcher/refs/heads/main/extras$DEST"
+wget -q -O "$DEST" "$URL"
+chmod +x "${DEST}"
+
+DEST=/usr/local/bin/suspend/99-turn-off-tv.sh
+URL="https://raw.githubusercontent.com/EnriqueWood/linux-gamer-patcher/refs/heads/main/extras$DEST"
+wget -q -O "$DEST" "$URL"
+chmod +x "${DEST}"
+
+systemctl daemon-reload
+systemctl enable "${ONSUSPEND_SERVICE}"
+systemctl enable "${ONRESUME_SERVICE}"
